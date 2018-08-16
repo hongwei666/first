@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+     http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+     http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+
+    <!--<aop:aspectj-autoproxy/>-->
+
+    <!--bean注解扫描-->
+    <context:component-scan base-package="com.ghw"/>
+    <context:component-scan base-package="com.ucl"/>
+
+    <bean class="com.ghw.controller.Swagger"/>
+    <mvc:resources mapping="swagger-ui.html" location="classpath:/META-INF/resources/"/>
+    <mvc:resources mapping="/webjars/**" location="classpath:/META-INF/resources/webjars/"/>
+
+    <!-- &lt;!&ndash;aop配置&ndash;&gt;
+     <aop:config>
+         &lt;!&ndash;aop切入点配置，表明被增强的方法&ndash;&gt;
+         <aop:pointcut id="cut" expression="execution(* com.ghw.service.*Service*.*(.. ))"/>
+         <aop:aspect ref="loggerAspect">
+             <aop:around method="around" pointcut-ref="cut"/>
+             <aop:after method="after" pointcut-ref="cut"/>
+             <aop:before method="before" pointcut-ref="cut"/>
+             <aop:after-throwing method="afterThrowing" pointcut-ref="cut"/>
+             <aop:after-returning method="afterReturning" pointcut-ref="cut"/>
+         </aop:aspect>
+     </aop:config>-->
+
+
+    <!--读取属性文件-->
+    <context:property-placeholder ignore-resource-not-found="true" location="classpath:jdbc.properties"/>
+
+    <!--dataSource配置-->
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close">
+        <property name="url">
+            <value>${url}</value>
+        </property>
+        <property name="username">
+            <value>${username}</value>
+        </property>
+        <property name="password">
+            <value>${password}</value>
+        </property>
+    </bean>
+
+    <!--SqlSession配置-->
+    <bean id="sqlSession" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="typeAliasesPackage" value="com.ghw.pojo,com.ucl.pojo"/>
+        <property name="dataSource" ref="dataSource"/>
+        <property name="mapperLocations" value="classpath:mapper/*.xml"/>
+        <property name="plugins">
+            <array>
+                <bean class="com.github.pagehelper.PageInterceptor">
+                    <property name="properties">
+                        <value>
+                            reasonable=true
+                        </value>
+                    </property>
+                </bean>
+            </array>
+        </property>
+    </bean>
+
+    <!--Mapper文件扫描目录配置-->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.ghw.mapper,com.ucl.mapper"/>
+    </bean>
+
+    <!--打开事务注解扫描-->
+    <tx:annotation-driven transaction-manager="transactionManager"/>
+    <!--事务注入dataSource-->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+</beans>

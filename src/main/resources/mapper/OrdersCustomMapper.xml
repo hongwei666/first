@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ucl.mapper.OrdersCustomMapper">
+
+    <!--使用ResultMap进行一对一查询映射-->
+    <resultMap id="OrderUserResultMap" type="com.ucl.pojo.Orders">
+        <id column="id" property="id"></id>
+        <result column="user_id" property="userid"></result>
+        <result column="number" property="number"></result>
+        <result column="createtime" property="createTime"></result>
+        <result column="note" property="note"></result>
+        <association property="user" javaType="com.ucl.pojo.User">
+            <id column="id" property="id"></id>
+            <result column="username" property="username"></result>
+            <result column="sex" property="sex"></result>
+            <result column="address" property="address"></result>
+        </association>
+    </resultMap>
+
+    <!--使用ResultMap在一个对象中包装另一个对象-->
+    <select id="findOrdersUser" resultMap="OrderUserResultMap">
+        SELECT t1.*, t2.username, t2.sex, t2.address
+        FROM orders t1,
+             t_user t2
+        WHERE t1.user_id = t2.id
+    </select>
+    <!--使用ResultType需要构建一个OrderCustom类-->
+    <!--<select id="findOrdersUser" resultType="com.ucl.pojo.OrdersCustom">
+        SELECT t1.*, t2.username, t2.sex, t2.address
+        FROM orders t1,
+             t_user t2
+        WHERE t1.user_id = t2.id
+    </select>-->
+
+    <!--使用ResultMap进行一对多映射查询-->
+    <resultMap id="OrdersAndOrderDetailResultMap" type="com.ucl.pojo.Orders" extends="OrderUserResultMap">
+
+        <collection property="orderdetails" ofType="com.ucl.pojo.OrderDetail">
+            <id column="orderdetail_id" property="id"></id>
+            <result column="orders_id" property="ordersId"></result>
+            <result column="items_id" property="itemsId"></result>
+            <result column="items_num" property="itemsNum"></result>
+        </collection>
+    </resultMap>
+    <!--使用ResultMap进行一对多映射查询-->
+    <select id="findOrdersAndOrderDetailResultMap" resultMap="OrdersAndOrderDetailResultMap">
+        SELECT t1.*,
+               t2.username,
+               t2.sex,
+               t2.address,
+               t3.id orderdetail_id,
+               t3.items_id,
+               t3.items_num,
+               t3.orders_id
+        FROM orders t1,
+             t_user t2,
+             orderdetail t3
+        WHERE t1.user_id = t2.id
+          AND t3.orders_id = t1.id
+    </select>
+
+    <resultMap id="userAndItemsResultMap" type="com.ucl.pojo.User">
+        <id column="id" property="id"></id>
+        <result column="username" property="username"></result>
+        <result column="birthday" property="birthday"></result>
+        <result column="sex" property="sex"></result>
+        <result column="address" property="address"></result>
+        <collection property="orders" ofType="com.ucl.pojo.Orders">
+            <id column="id" property="id"></id>
+            <result column="user_id" property="userid"></result>
+            <result column="number" property="number"></result>
+            <result column="createtime" property="createTime"></result>
+            <result column="note" property="note"></result>
+            <collection property="orderdetails" ofType="com.ucl.pojo.OrderDetail">
+                <id column="orderdetail_id" property="id"></id>
+                <result column="orders_id" property="ordersId"></result>
+                <result column="items_id" property="itemsId"></result>
+                <result column="items_num" property="itemsNum"></result>
+                <association property="items" javaType="com.ucl.pojo.Items">
+                    <id column="id" property="id"></id>
+                    <result column="itemsName" property="itemsName"></result>
+                    <result column="price" property="price"></result>
+                    <result column="detail" property="detail"></result>
+                    <result column="picture" property="pic"></result>
+                </association>
+            </collection>
+        </collection>
+    </resultMap>
+
+    <select id="findUserAndItemsResultMap" resultMap="userAndItemsResultMap">
+        select t1.username,
+               t1.birthday,
+               t1.sex,
+               t1.address,
+               t2.*,
+               t3.id orderdetail_id,
+               t3.items_id,
+               t3.items_num,
+               t3.orders_id,
+               t4.itemsname,
+               t4.price,
+               t4.detail
+        from t_user t1,
+             orders t2,
+             orderdetail t3,
+             items t4
+        where t1.id = t2.user_id
+          and t2.id = t3.orders_id
+          and t4.id = t3.items_id
+    </select>
+</mapper>

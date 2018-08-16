@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ghw.mapper.UserMapper">
+
+    <select id="list" resultType="UserOld">
+        select *
+        from user
+    </select>
+
+    <select id="getUser" resultType="UserOld">
+        select *
+        from user
+        where user.user.id = #{id}
+    </select>
+
+    <insert id="addUser" parameterType="UserOld">
+        insert into user (name, sex, address)
+        values (#{name}, #{sex}, #{address})
+    </insert>
+
+    <delete id="delete" parameterType="UserOld">
+        delete
+        from user
+        where id = #{id}
+    </delete>
+
+    <update id="editUser">
+        update user
+        set name    = #{name},
+            sex     = #{sex},
+            address = #{address}
+        where id = #{id}
+    </update>
+
+    <select id="total" resultType="int">
+        select count(*)
+        from user
+    </select>
+
+    <select id="listUsersByPage" resultType="UserOld">
+        select * from user
+        <if test="start!=null and count!=null">
+            limit #{start},#{count}
+        </if>
+    </select>
+
+    <select id="findUserByName" parameterType="string" resultType="UserOld">
+        select * from user u where 1=1
+        <if test="username!=null">
+            and u.name like concat('%',#{username},'%')
+        </if>
+    </select>
+
+</mapper>

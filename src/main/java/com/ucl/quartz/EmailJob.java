@@ -19,6 +19,7 @@ public class EmailJob implements Job {
         } catch (Exception e) {
             System.out.println("发生异常");
             JobExecutionException je = new JobExecutionException(e);
+            //停止触发器
             je.setUnscheduleAllTriggers(true);
             throw je;
         }
